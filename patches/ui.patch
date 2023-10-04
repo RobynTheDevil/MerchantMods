@@ -1,0 +1,484 @@
+--- renderer.js	2023-10-03 20:24:04.409016700 -0400
++++ renderer.js	2023-10-03 20:24:04.000000000 -0400
+@@ -17197,15 +17198,13 @@
+             name: "inventory",
+             components: {
+                 draggable: G.a,
+-                itemPresenter: F.a,
+                 mythInfo: O
+             },
+             props: ["isPlayer", "isOffer", "isConceal", "isAll", "isViewable", "isLocked", "customInventory"],
+             data: function() {
+                 return {
+-                    world: this.$parent.$parent.$parent.world,
++                    world: this.$parent.$parent.world,
+                     stallRefs: this.$parent.$parent.$refs,
+-                    inventory: null,
+                     showByIndex: null,
+                     popoverHorizontalOffset: !1,
+                     popoverVerticalOffset: !1,
+@@ -17213,6 +17212,7 @@
+                     popoverVerticalSize: 300,
+                     popoverVerticalOffsetPx: 0,
+                     reloading: !1,
++                    inventory: null,
+                     enteringNoteItemIndex: !1,
+                     openMythDeckDelayMs: 850,
+                     noteFocusDelayMs: 100
+@@ -17298,7 +17298,8 @@
+                             if ("inventory_items" !== e.target.offsetParent.offsetParent.offsetParent.className) return;
+                             A = e.target.offsetParent.offsetParent
+                         }
+-                        this.popoverVerticalOffsetPx = A.scrollTop
++                        var b = (e.target && "quest_list" === e.target.offsetParent.offsetParent.offsetParent.className) ? e.target.offsetParent.offsetParent.offsetParent.scrollTop : 0;
++                        this.popoverVerticalOffsetPx = A.scrollTop + b;
+                     } catch (e) {}
+                 },
+                 displaySize: function(e, A) {
+@@ -17311,16 +17312,21 @@
+                 },
+                 itemClasses: function(e) {
+                     var A = this.world.items[e.itemIndex];
+-                    return this.$refs.itemPresenter.itemSizeClass(A.size) + " " + this.$refs.itemPresenter.itemWeightClass(A.weight) + " " + this.$refs.itemPresenter.itemTypeClass(A) + " " + this.$refs.itemPresenter.itemUncollectedClass(e) + " " + this.$refs.itemPresenter.itemQuestClass(A) + " " + (e.highlight ? "highlighted_item" : "") + " " + (e.flagged ? "flagged_item" : "")
++                    return this.$parent.$refs.itemPresenter.itemSizeClass(A.size)
++                        + " " + this.$parent.$refs.itemPresenter.itemWeightClass(A.weight)
++                        + " " + this.$parent.$refs.itemPresenter.itemTypeClass(A)
++                        + " " + this.$parent.$refs.itemPresenter.itemQuestClass(A)
++                        + " " + (e.highlight ? "highlighted_item" : "")
++                        + " " + (e.flagged ? "flagged_item" : "")
+                 },
+                 quantityClasses: function(e) {
+-                    return this.$refs.itemPresenter.quantityClass(e.quantity)
++                    return this.$parent.$refs.itemPresenter.quantityClass(e.quantity)
+                 },
+                 tagClass: function(e) {
+                     if (this.illegalTags.includes(e)) return "illegal_tag"
+                 },
+                 itemIconPath: function(e, A) {
+-                    return this.$refs.itemPresenter.itemIconPath(e, A)
++                    return this.$parent.$refs.itemPresenter.itemIconPath(e, A)
+                 },
+                 loadInventory: function() {
+                     this.$parent.$parent.warehouseMode ? this.inventory = this.world.marketplaces[this.marketplace.index].inventory : this.customInventory ? this.inventory = this.customInventory : this.isPlayer ? this.inventory = this.world.player.inventory : this.inventory = this.character.inventory
+@@ -17348,7 +17354,7 @@
+                     this.showByIndex = null, e.offerQuantity = !e.offerQuantity
+                 },
+                 playAudioItem: function(e) {
+-                    this.$refs.itemPresenter.playAudioItem(e)
++                    this.$parent.$refs.itemPresenter.playAudioItem(e)
+                 },
+                 reload: function() {
+                     this.reloading = !0;
+@@ -17372,11 +17378,11 @@
+                     return "margin-top: -" + this.popoverVerticalOffsetPx + "px;"
+                 },
+                 filteredInventory: function() {
+-                    this.inventory = this.isPlayer ? this.world.player.inventory : this.inventory;
++                    var inv = this.isPlayer ? this.world.player.inventory : this.inventory;
+                     var e = this;
+                     this.world.updateInventoryIndex;
+                     var A = this.world.items;
+-                    return this.inventory.filter((function(A) {
++                    return inv.filter((function(A) {
+                         if (!A.quantity) return !1;
+                         if (!e.isAll && !e.isViewable && !e.isOffer && A.conceal != e.isConceal) return !1;
+                         if ((!e.isAll || !A.quantity) && e.isOffer && (!A.quantity || !A.offerQuantity)) return !1;
+@@ -17407,9 +17413,7 @@
+                 t = e._self._c || A;
+             return t("section", {
+                 staticClass: "inventory_parent"
+-            }, [t("itemPresenter", {
+-                ref: "itemPresenter"
+-            }), e._v(" "), e.inventory && !e.reloading ? t("div", {
++            }, [e.inventory && !e.reloading ? t("div", {
+                 staticClass: "inventory_items_parent",
+                 on: {
+                     wheel: e.onWheel
+@@ -23992,6 +23996,7 @@
+                 inventorySort: K,
+                 inventoryFilter: P,
+                 inventoryInfo: T,
++                itemPresenter: F.a,
+                 discard: Ge
+             },
+             data: function() {
+@@ -24023,7 +24028,7 @@
+                 t = e._self._c || A;
+             return t("section", {
+                 staticClass: "compendium_inventory_container gpu"
+-            }, [t("div", {
++            }, [t("itemPresenter", {ref: "itemPresenter"}), t("div", {
+                 staticClass: "inventory_function_row columns"
+             }, [e._m(0), e._v(" "), t("span", {
+                 staticClass: "column is-10 has-text-right"
+@@ -24216,6 +24221,9 @@
+         Le = {
+             name: "compendium_interface",
+             components: {
++                inventory: Y,
++                itemPresenter: F.a,
++                inventorySort: K,
+                 compendiumInventory: Ye,
+                 dateDisplay: f,
+                 timeDial: E,
+@@ -24230,7 +24238,8 @@
+                     daysInAYear: 84,
+                     daysInASeason: 28,
+                     daysInAWeek: 7,
+-                    showShortcuts: !1
++                    showShortcuts: !1,
++                    showTransactionHistory: !1
+                 }
+             },
+             methods: {
+@@ -24240,6 +24249,12 @@
+                 seal: function(e) {
+                     return e.unlocked ? t(286)("./" + e.sealFile) : t(287)
+                 },
++                getCharacter: function(e) {
++                    return this.world.characters[e.characterIndex];
++                },
++                characterIcon: function(e) {
++                    return t(6)("./" + this.getCharacter(e).portraitFile);
++                },
+                 itemTagCollected: function(e) {
+                     var A = this;
+                     return this.world.player.inventory.filter((function(t) {
+@@ -24257,6 +24272,9 @@
+                 toggleShortcuts: function() {
+                     this.audio("ui/menu_click.wav", this.defaults.clickVolume), this.showShortcuts = !this.showShortcuts
+                 },
++                toggleTransactionHistory: function() {
++                    this.audio("ui/menu_click.wav", this.defaults.clickVolume), this.showTransactionHistory = !this.showTransactionHistory
++                },
+                 closeCompendium: function() {
+                     this.$parent.showCompendium = !1, this.showShortcuts = !1
+                 }
+@@ -24332,49 +24350,135 @@
+             var e = this,
+                 A = e.$createElement,
+                 t = e._self._c || A;
+-            return t("section", {
+-                staticClass: "compendium columns"
+-            }, [t("div", {
+-                staticClass: "column is-4"
+-            }, [t("div", {
+-                staticClass: "compendium_quests_parent"
+-            }, [t("h2", {
+-                staticClass: "compendium_header"
+-            }, [e._v("Quests")]), e._v(" "), t("br"), e._v(" "), t("div", {
+-                staticClass: "quest_list"
+-            }, e._l(e.sortedMarketplaces, (function(A, a) {
+-                return t("div", {
+-                    staticClass: "compendium_marketplace",
+-                    class: e.marketplaceClass(A)
+-                }, [t("img", {
+-                    staticClass: "travel_image compendium_seal",
+-                    attrs: {
+-                        src: e.seal(A)
+-                    }
+-                }), e._v(" "), t("span", {
+-                    staticClass: "compendium_marketplace_name"
+-                }, [e._v("\n            " + e._s(A.unlocked ? A.name : "Undiscovered") + "\n          ")]), e._v(" "), A.unlocked ? t("span", {
+-                    staticClass: "compendium_quest_parent"
+-                }, [A.quest.started ? A.quest.finished ? t("span", {
+-                    staticClass: "quest_finished quest_status"
+-                }, [e._v("\n              ✓\n              " + e._s(A.quest.name) + "\n            ")]) : A.quest.started ? t("span", {
+-                    staticClass: "quest_started quest_status"
+-                }, [e._v("\n              " + e._s(A.quest.name) + "\n            ")]) : e._e() : t("span", {
+-                    staticClass: "quest_undiscovered quest_status"
+-                }, [e._v("\n              Undiscovered\n            ")]), e._v(" "), t("p", {
+-                    staticClass: "quest_subtext"
+-                }, [A.quest.finished ? t("span", {
+-                    staticClass: "quest_todo"
+-                }, [e._v("\n                " + e._s(A.quest.outcome) + "\n              ")]) : A.quest.started ? t("span", {
+-                    staticClass: "quest_outcome"
+-                }, [e._v("\n                " + e._s(A.quest.todo) + "\n              ")]) : t("span", {
+-                    staticClass: "quest_subtext_placeholder"
+-                }, [e._v("\n                ___\n              ")])])]) : t("span", {
+-                    staticClass: "compendium_quest_parent"
+-                }, [t("span", {
+-                    staticClass: "quest_undiscovered quest_status"
+-                }, [e._v("\n              Undiscovered\n            ")])])])
+-            })), 0)])]), e._v(" "), t("div", {
++            var counter = 0;
++            return t("section", {staticClass: "compendium columns"}, [
++            t("itemPresenter", {staticClass: "gpu", ref: "itemPresenter"}),
++            t("div", {staticClass: "column is-4"}, [
++                t("div", {staticClass: "columns"}, [
++                    t("div", {staticClass: "column is-4"}, []),
++                    t("div", {staticClass: "column is-2"}, [
++                        t("h2", {staticClass: "compendium_header"}, [e._v(e.showTransactionHistory ? "Trades" : "Quests")]),
++                    ]),
++                    t("div", {staticClass: "column is-2"}, []),
++                    t("div", {staticClass: "column is-4"}, [
++                        t("button", {
++                            staticClass: "a_btn tip_button",
++                            on: {
++                                click: function(A) {
++                                    return e.toggleTransactionHistory() }
++                            },
++                        }, [e._v("\n      " + e._s(e.showTransactionHistory ? "Hide" : "Show") + " Trade History\n    ")])
++                    ])
++                ]),
++                e._v(" "),
++                e.showTransactionHistory ?
++                t("div", {staticClass: "compendium_stats_parent", style: "margin-top:-1em; padding-top:1em; padding-left:1em; padding-right:0.2em"}, [t("div", {staticClass: "quest_list", style: "position:relative; width:100%; top:0; padding-left:1em; padding-right:1em"},
++                    e._l(e.world.transactionHistory, (function(A, a) {
++                        return t("div", [
++                        t("div", {staticClass: "character_inventory_container"}, [
++                            t("div", {staticClass: "inventory_function_row columns"}, [
++                                e._v(" "), t("span", {staticClass: "column is-10 has-text-right"}, [
++                                    t("inventorySort", {ref: "inventorySort"})
++                                ], 1)
++                            ]),
++                            t("div", {staticClass: "columns compendium_marketplace compendium_marketplace_quest_finished"}, [
++                                t("img", {
++                                    staticClass: "travel_image compendium_seal",
++                                    attrs: {
++                                        src: e.seal(e.world.marketplaces[A.marketplaceIndex])
++                                    }
++                                }),
++                                t("div", {staticClass: "column"}, [
++                                    t("span", {staticClass: "compendium_marketplace_name"},
++                                        [e._v("\n            " + e._s(e.world.marketplaces[A.marketplaceIndex].name) + "\n          ")]), e._v(" "),
++                                    t("span", {staticClass: "label"},
++                                        [e._v("            Year " + A.datetime.year + ", Season " + A.datetime.season + ", Day " + A.datetime.day + "          ")])
++                                ])
++                            ]),
++                            t("span", {staticClass: "columns"}, [
++                                t("div", {staticClass: "column is-6 company_job_info_parent"}, [
++                                    t("inventory", {
++                                        staticClass: "player_viewable_inventory",
++                                        attrs: {
++                                            "is-all": !0,
++                                            "is-viewable": !1,
++                                            "is-locked": !1,
++                                            "is-conceal": !1,
++                                            "is-player": !1,
++                                            "is-offer": !1,
++                                            "character-index": null,
++                                            "custom-inventory": A.player.map(function(a){return {...e.world.items[a.itemIndex], ...a}})
++                                        }
++                                    }),
++                                    t("br"), t("br"),
++                                    t("span", {staticClass: "quest_todo has-text-weight-bold has-text-centered"}, [e._v("My Offer")])
++                                ]),
++                                t("div", {staticClass: "column is-6 company_job_info_parent"}, [
++                                    t("inventory", {
++                                        staticClass: "player_viewable_inventory",
++                                        attrs: {
++                                            "is-all": !0,
++                                            "is-viewable": !1,
++                                            "is-conceal": !1,
++                                            "is-player": !1,
++                                            "is-offer": !1,
++                                            "character-index": null,
++                                            "custom-inventory": A.character.map(function(a){return {...e.world.items[a.itemIndex], ...a}})
++                                        }
++                                    }),
++                                    t("br"),
++                                    t("div", {staticClass: "columns"}, [
++                                        t("img", {
++                                            staticClass: "travel_image item_size_huge",
++                                            attrs: {
++                                                src: e.characterIcon(A)
++                                            }
++                                        }),
++                                        t("div", [
++                                            t("br"),
++                                            t("span", {staticClass: "quest_todo has-text-weight-bold has-text-centered"},
++                                                [e._v(e.getCharacter(A).name + (e.getCharacter(A).profession ? " the " + e.getCharacter(A).profession: "") + "'s Offer")]),
++                                        ])
++                                    ])
++                                ])
++                            ])
++                        ])
++                    ])
++                })))])
++                : t("div", { staticClass: "quest_list" },
++                    e._l(e.sortedMarketplaces, (function(A, a) {
++                    return t("div", {
++                        staticClass: "compendium_marketplace",
++                        class: e.marketplaceClass(A)
++                    }, [t("img", {
++                        staticClass: "travel_image compendium_seal",
++                        attrs: {
++                            src: e.seal(A)
++                        }
++                    }), e._v(" "), t("span", {
++                        staticClass: "compendium_marketplace_name"
++                    }, [e._v("\n            " + e._s(A.unlocked ? A.name : "Undiscovered") + "\n          ")]), e._v(" "), A.unlocked ? t("span", {
++                        staticClass: "compendium_quest_parent"
++                    }, [A.quest.started ? A.quest.finished ? t("span", {
++                        staticClass: "quest_finished quest_status"
++                    }, [e._v("\n              ✓\n              " + e._s(A.quest.name) + "\n            ")]) : A.quest.started ? t("span", {
++                        staticClass: "quest_started quest_status"
++                    }, [e._v("\n              " + e._s(A.quest.name) + "\n            ")]) : e._e() : t("span", {
++                        staticClass: "quest_undiscovered quest_status"
++                    }, [e._v("\n              Undiscovered\n            ")]), e._v(" "), t("p", {
++                        staticClass: "quest_subtext"
++                    }, [A.quest.finished ? t("span", {
++                        staticClass: "quest_todo"
++                    }, [e._v("\n                " + e._s(A.quest.outcome) + "\n              ")]) : A.quest.started ? t("span", {
++                        staticClass: "quest_outcome"
++                    }, [e._v("\n                " + e._s(A.quest.todo) + "\n              ")]) : t("span", {
++                        staticClass: "quest_subtext_placeholder"
++                    }, [e._v("\n                ___\n              ")])])]) : t("span", {
++                        staticClass: "compendium_quest_parent"
++                    }, [t("span", {
++                        staticClass: "quest_undiscovered quest_status"
++                    }, [e._v("\n              Undiscovered\n            ")])])])
++            })), 0)]), e._v(" "), t("div", {
+                 staticClass: "column is-4"
+             }, [t("div", {
+                 staticClass: "compendium_stats_parent"
+@@ -24549,7 +24653,7 @@
+                     src: e.clickIcon("middle")
+                 }
+             }), e._v("Middle click to split quantity "), t("br"), e._v(" "), t("br"), e._v(" "), t("kbd", [e._v("shift")]), e._v(" click to split quantity "), t("br"), e._v(" "), t("br"), e._v(" "), t("kbd", [e._v("alt")]), e._v(" click to add 10 quantity"), t("br"), e._v(" "), t("br"), e._v(" "), t("kbd", [e._v("ctrl")]), e._v(" click to conceal "), t("br"), e._v(" "), t("br"), e._v(" "), t("kbd", [e._v("tab")]), e._v(" to toggle Journal "), t("br")]), e._v(" "), e.$parent.showCompendium ? t("compendium-inventory", {
+-                ref: "compendium_inventory",
++                ref: "compendiumInventory",
+                 staticClass: "compendium_inventory"
+             }) : e._e()], 1)])
+         }), [], !1, null, null, null),
+@@ -25983,7 +26087,8 @@
+             components: {
+                 inventory: Y,
+                 inventorySort: K,
+-                inventoryFilter: P
++                inventoryFilter: P,
++                itemPresenter: F.a
+             },
+             data: function() {
+                 return {
+@@ -26014,7 +26119,7 @@
+                 }],
+                 staticClass: "character_inventory_container",
+                 class: e.$parent.characterIsLeaving ? "not_visible" : ""
+-            }, [t("div", {
++            }, [t("itemPresenter", {ref: "itemPresenter"}), t("div", {
+                 staticClass: "inventory_function_row columns"
+             }, [t("span", {
+                 staticClass: "column is-1"
+@@ -26089,6 +26194,7 @@
+                 inventorySort: K,
+                 inventoryFilter: P,
+                 inventoryInfo: T,
++                itemPresenter: F.a,
+                 discard: Ge
+             },
+             data: function() {
+@@ -26133,7 +26239,7 @@
+                         return e.activateOffer()
+                     }
+                 }
+-            }, [t("div", {
++            }, [t("itemPresenter", {ref: "itemPresenter"}), t("div", {
+                 staticClass: "inventory_function_row columns"
+             }, [t("span", {
+                 staticClass: "column is-1"
+@@ -27271,6 +27377,23 @@
+                     }))
+                 },
+                 transaction: function() {
++                    var af = function(e){return !!e.offerQuantity};
++                    var am = function(e){return {"itemIndex": e.itemIndex, "quantity": e.offerQuantity}};
++                    var b = this.world.player.inventory.filter(af).map(am);
++                    var c = this.world.characters[this.characterIndex].inventory.filter(af).map(am);
++                    if (this.world.transactionHistory.length >= this.world.settings.transactionHistoryLength){this.world.transactionHistory.pop();}
++                    this.world.transactionHistory.unshift({
++                        "player": b,
++                        "character": c,
++                        "characterIndex": this.characterIndex,
++                        "marketplaceIndex": this.world.player.marketplaceIndex,
++                        "datetime": {
++                            "year": this.world.datetime.year,
++                            "season": this.world.datetime.season,
++                            "month": this.world.datetime.month,
++                            "day": this.world.datetime.day
++                        }
++                    });
+                     this.audio("ui/trade.wav"), this.dealDone = !0, this.offersMade = 0, this.transferItems(!0, this.world.player.inventory, this.world.characters[this.characterIndex].inventory), this.transferItems(!1, this.world.characters[this.characterIndex].inventory, this.world.player.inventory), this.easterEggTransactionHook()
+                 },
+                 transferItems: function(e, A, t) {
+@@ -27617,6 +27740,12 @@
+                 hasReputationOfDeal: function() {
+                     return this.character.reputation >= this.reputationBonusFromDeal
+                 },
++                unseenCharactersAvailable: function() {
++                    var e = this;
++                    return this.world.characters.reduce((function(A, t) {
++                        return t.marketplaceIndex !== e.marketplace.index ? A : t.isActive ? t.seenToday || t.isPlunderer ? A : A + 1 : A
++                    }), 0)
++                },
+                 playerIsHardModeBroke: function() {
+                     return !!this.world.settings.hardMode && !this.world.player.inventory.reduce((function(e, A) {
+                         return e + A.quantity
+@@ -27857,7 +27986,28 @@
+                         return e.goodbye()
+                     }
+                 }
+-            }, [e._v("\n        Goodbye\n      ")]), e._v(" "), e.canPlayMyth ? t("button", {
++            }, [e._v("\n        Goodbye\n      ")]), !e.unseenCharactersAvailable ? e._e() : t("button", {
++                staticClass: "interact_end_button half_button a_btn",
++                class: e.isActiveButton("goodbye"),
++                on: {
++                    click: function(A) {
++                        Vue.nextTick((function() {
++                            e.world.scene = null, e.world.player.characterIndex = null, e.$parent.characterSaysType = null
++                            Vue.nextTick((function() {
++                                e.$parent.$refs.holler.getNextCharacter()
++                            }))
++                        }))
++                        return e.goodbye()
++                    }
++                }
++            }, [e._v("\n        Next Customer\n      ")]), e.unseenCharactersAvailable ? e._e() : t("button", {
++                staticClass: "interact_end_button half_button a_btn",
++                attrs: {
++                    disabled: "true"
++                }
++            }, [e._v("\n      No More Customers\n      "), t("i", {
++                staticClass: "fas fa-user"
++            })]), e._v(" "), e.canPlayMyth ? t("button", {
+                 staticClass: "interact_myth_button half_button a_btn",
+                 class: e.isActiveButton("playMyth"),
+                 on: {
+@@ -35028,7 +35178,7 @@
+                     }) : null !== e.characterIndex && e.characterIndex != e.indexes.guard && e.characterIndex != e.indexes.thief ? t("character-inventory", {
+                         ref: "character_inventory",
+                         staticClass: "character_inventory"
+-                    }) : e._e(), e._v(" "), null !== e.characterIndex || e.isEndOfDay || e.marketClosingEvent ? e._e() : t("holler", {
++                    }) : e._e(), e._v(" "), e.isEndOfDay || e.marketClosingEvent ? e._e() : t("holler", {
+                         ref: "holler",
+                         staticClass: "holler"
+                     }), e._v(" "), null !== e.characterIndex || e.warehouseMode ? e._e() : t("townsquare", {
+@@ -35587,7 +35737,11 @@
+                     this.world = JSON.parse(localStorage.getItem(this.worldKey)), this.handleCreditsWrapper(), this.showStall = this.world.datetime.hour < this.hours.endOfDay, this.updateWorldSaveToCurrentVersion(), this.world.version = this.currentVersion
+                 },
+                 newWorld: function() {
+-                    this.world = JSON.parse(r()(l)), this.providedSeed ? this.world.seed = this.providedSeed : this.randomSeed && (this.world.seed = Math.floor(1e5 + 9e5 * Math.random())), this.world.marketplaces = this.loadInJson(g), this.world.characters = this.loadInJson(s), this.world.characters = this.initCharacters(this.world.characters), this.world.professions = this.loadInJson(c)[0], this.world.kingdoms = this.loadInJson(u), this.world.events = this.loadInJson(d), this.world.items = this.loadInJson(p), this.world.tagList = this.createTagList(), this.updateCharacterDialogue(), this.setHardMode(), this.$refs.dayCycle.performNewWorldCycle(), this.givePlayerFirstItems(), this.world.version = this.currentVersion, this.saveWorld(!1)
++                    this.world = JSON.parse(r()(l)), this.providedSeed ? this.world.seed = this.providedSeed : this.randomSeed && (this.world.seed = Math.floor(1e5 + 9e5 * Math.random())), this.world.marketplaces = this.loadInJson(g), this.world.characters = this.loadInJson(s), this.world.professions = this.loadInJson(c)[0], this.world.kingdoms = this.loadInJson(u), this.world.events = this.loadInJson(d), this.world.items = this.loadInJson(p), this.loadMods(), this.world.characters = this.initCharacters(this.world.characters), this.world.tagList = this.createTagList(), this.updateCharacterDialogue(), this.setHardMode(), this.$refs.dayCycle.performNewWorldCycle(), this.givePlayerFirstItems(), this.world.version = this.currentVersion, this.saveWorld(!1)
++                },
++                loadMods: function() {
++                    this.world.transactionHistory = [];
++                    this.world.settings.transactionHistoryLength = 200;
+                 },
+                 setHardMode: function() {
+                     this.$route.params.hardMode && (this.world.settings.hardMode = !0, this.world.settings.theftEnabled = !0, this.world.characters = this.world.characters.map((function(e) {
+@@ -37317,6 +37471,7 @@
+             insert: function(e) {
+                 var A, t = e.context,
+                     a = e.componentInstance;
++                a.world = t.world;
+                 a._isMounted || (a._isMounted = !0, At(a, "mounted")), e.data.keepAlive && (t._isMounted ? ((A = a)._inactive = !1, at.push(A)) : et(a, !0))
+             },
+             destroy: function(e) {
+@@ -44325,4 +44480,4 @@
+             return A("p", [this._v("\n            Obtainable Items\n            | "), A("small", [this._v("quantityMin")]), this._v("\n            | "), A("small", [this._v("quantityMax")])])
+         }], !1, null, null, null);
+     A.default = g.exports
+-}]);
+\ No newline at end of file
++}]);

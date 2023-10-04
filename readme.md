@@ -8,12 +8,12 @@ Two additions are made to the UI:
 
 Next Customer button during barter
 
-[img]
+![image](https://github.com/RobynTheDevil/MerchantMods/assets/49046033/adbb46d9-dc17-48c9-b79f-2c05928fde8b)
 
 
 and Transaction History (requires new save)
 
-[img]
+![image](https://github.com/RobynTheDevil/MerchantMods/assets/49046033/f10435ab-c8ad-4acb-b873-ff65de259765)
 
 
 Dependencies

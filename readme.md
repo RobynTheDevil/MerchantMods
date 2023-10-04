@@ -26,11 +26,9 @@ unzip into steamapps/common/merchant_of_the_six_kingdoms/resources/
 
 
 Linux & Mac
-`cd resources`
 `./patcher.sh`
 
 Windows (todo)
-`dir resources`
 `./patcher.ps1`
 
 

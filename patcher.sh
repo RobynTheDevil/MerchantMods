@@ -12,7 +12,7 @@ done <<- EOM
 	asar extract app.asar app_original
 	mv app.asar app_original.asar
 	js-beautify app_original/dist/electron/renderer.js -o renderer.js
-	git apply ui.patch
+	git apply patches/ui.patch
 	cp -r app_original app
 	mv renderer.js app/dist/electron/renderer.js
 	asar pack app app.asar

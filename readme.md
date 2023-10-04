@@ -22,7 +22,7 @@ npm-asar, git, js-beautify
 
 Installation
 
-unzip into steamapps/common/merchant_of_the_six_kingdoms/resources/
+extract `patcher.sh` and `patches/` into `steamapps/common/merchant_of_the_six_kingdoms/resources/`
 
 
 Linux & Mac
